@@ -60,7 +60,7 @@ cmake -S . -B build \
     -DCMAKE_CXX_FLAGS="${ADDITIONAL_CMAKE_CXX_FLAGS}" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel ${nproc}
-cmake --install build
+cmake --install build --prefix=${prefix}
 """
 
 # These are the platforms we will build for by default, unless further
