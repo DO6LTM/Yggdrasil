@@ -4,22 +4,28 @@ using BinaryBuilder
 using Pkg
 
 name = "xrt"
-version = v"2.17"
+version = v"2.16"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/Xilinx/XRT.git", "a75e9843c875bac0f52d34a1763e39e16fb3c9a7"),
+    GitSource("https://github.com/Xilinx/XRT.git", "fa4c0045003fed0acea4593788dce5ef6d0b66ee"),
+    GitSource("https://github.com/Xilinx/dma_ip_drivers.git", "9f02769a2eddde008158c96efa39d7edb6512578"),
+    GitSource("https://github.com/KhronosGroup/OpenCL-CLHPP.git", "c7b4aded1cab9560b226041dd962f63375a9a384"),
     DirectorySource("./bundled")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Copy DMA IP drivers to necessary directory
+cp -r ${WORKSPACE}/srcdir/dma_ip_drivers/* ${WORKSPACE}/srcdir/XRT/src/runtime_src/core/pcie/driver/linux/xocl/lib/libqdma/
+
 cd ${WORKSPACE}/srcdir/XRT
 install_license LICENSE
 
 if [[ "${target}" == *-linux-* ]]; then
     # Apply patch with missing define
     atomic_patch -p1 ../patches/linux/huge_shift.patch
+    export ADDITIONAL_CMAKE_CXX_FLAGS=""
 fi
 
 if [[ "${target}" == *-w64-* ]]; then
@@ -43,6 +49,9 @@ atomic_patch -p1 ../patches/fix-install-dir.patch
 
 # Statically link to boost
 export XRT_BOOST_INSTALL=${WORKSPACE}/destdir
+
+# Include OpenCL API C++ bindings
+export ADDITIONAL_CMAKE_CXX_FLAGS="-I${WORKSPACE}/srcdir/OpenCL-CLHPP/include $ADDITIONAL_CMAKE_CXX_FLAGS"
 
 cd src
 cmake -S . -B build \
@@ -74,9 +83,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(name="boost_jll", version=v"1.79.0")),
     BuildDependency("ELFIO_jll"),
     BuildDependency("OpenCL_Headers_jll"),
+    Dependency("boost_jll"; compat="1.79.0"),
     Dependency("ocl_icd_jll"),
     Dependency("rapidjson_jll"),
     Dependency("LibCURL_jll", platforms=filter(Sys.islinux, platforms); compat="7.73, 8"),
@@ -96,4 +105,4 @@ ENV["XILINX_XRT"] = xrt_jll.artifact_dir
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"9", init_block)
+    julia_compat="1.6", preferred_gcc_version=v"8", init_block)
