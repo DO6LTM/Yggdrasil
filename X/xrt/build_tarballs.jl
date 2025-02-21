@@ -25,6 +25,7 @@ install_license LICENSE
 if [[ "${target}" == *-linux-* ]]; then
     # Apply patch with missing define
     atomic_patch -p1 ../patches/linux/huge_shift.patch
+    atomic_patch -p1 ../patches/linux/no_static_boost.patch
     export ADDITIONAL_CMAKE_CXX_FLAGS=""
 fi
 
@@ -32,7 +33,6 @@ if [[ "${target}" == *-w64-* ]]; then
     # mingw patches
     atomic_patch -p1 ../patches/windows/fix_xclbinutil_cmake.patch
     atomic_patch -p1 ../patches/windows/remove_duplicate_type_defs.patch
-    atomic_patch -p1 ../patches/windows/disable_trace.patch
     atomic_patch -p1 ../patches/windows/config_reader.patch
     atomic_patch -p1 ../patches/windows/unistd.patch
     atomic_patch -p1 ../patches/windows/ocl_bindings.patch
