@@ -99,10 +99,6 @@ dependencies = [
     Dependency("systemtap_jll", platforms=filter(Sys.islinux, platforms)),
 ]
 
-init_block = raw"""
-ENV["XILINX_XRT"] = xrt_jll.artifact_dir
-"""
-
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.6", preferred_gcc_version=v"8", init_block)
+    julia_compat="1.6", preferred_gcc_version=v"8")
